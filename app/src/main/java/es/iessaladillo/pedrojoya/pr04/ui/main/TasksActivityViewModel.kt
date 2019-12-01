@@ -2,20 +2,17 @@ package es.iessaladillo.pedrojoya.pr04.ui.main
 
 import android.app.Application
 import android.content.Intent
-import android.os.Bundle
-import android.widget.Toast
-import androidx.core.content.ContextCompat.startActivity
+import android.os.Build
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.google.android.material.snackbar.Snackbar
 import es.iessaladillo.pedrojoya.pr04.R
-import es.iessaladillo.pedrojoya.pr04.R.layout.tasks_activity
-import es.iessaladillo.pedrojoya.pr04.R.layout.tasks_activity_item
 import es.iessaladillo.pedrojoya.pr04.base.Event
 import es.iessaladillo.pedrojoya.pr04.data.Repository
 import es.iessaladillo.pedrojoya.pr04.data.entity.Task
-import java.lang.NullPointerException
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 class TasksActivityViewModel(
     private val repository: Repository,
@@ -24,12 +21,12 @@ class TasksActivityViewModel(
 
     // Estado de la interfaz
 
-    private val _tasks: MutableLiveData<List<Task>> = MutableLiveData()
+    private val mutableTasks: MutableLiveData<List<Task>> = MutableLiveData()
     val tasks: LiveData<List<Task>>
-        get() = _tasks
+        get() = mutableTasks
 
     init {
-        _tasks.value = repository.queryAllTasks()
+        mutableTasks.value = repository.queryAllTasks()
     }
 
     private val _currentFilter: MutableLiveData<TasksActivityFilter> =
@@ -67,18 +64,21 @@ class TasksActivityViewModel(
     // ACTION METHODS
 
     // Hace que se muestre en el RecyclerView todas las tareas.
-    fun filterAll() {
+    fun filterAll(itemId: Int) {
         queryTasks(TasksActivityFilter.ALL)
+        _currentFilterMenuItemId.value = itemId
     }
 
     // Hace que se muestre en el RecyclerView sólo las tareas completadas.
-    fun filterCompleted() {
-        queryTasks(TasksActivityFilter.COMPLETED)
+    fun filterCompleted(itemId: Int) {
+       queryTasks(TasksActivityFilter.COMPLETED)
+        _currentFilterMenuItemId.value = itemId
     }
 
     // Hace que se muestre en el RecyclerView sólo las tareas pendientes.
-    fun filterPending() {
+    fun filterPending(itemId: Int) {
         queryTasks(TasksActivityFilter.PENDING)
+        _currentFilterMenuItemId.value = itemId
     }
 
     // Agrega una nueva tarea con dicho concepto. Si la se estaba mostrando
@@ -106,12 +106,12 @@ class TasksActivityViewModel(
     // Si no se estaba mostrando ninguna tarea, se muestra un mensaje
     // informativo en un SnackBar de que no hay tareas que borrar.
     fun deleteTasks() {
-        val ids: List<Long> = tasks.value!!.filter { it.completed }.map { it.id }
+        val ids: List<Long> = tasks.value!!.map { it.id }
         if (ids.isNotEmpty()) {
             repository.deleteTasks(ids)
         } else {
-            //Snackbar.make(lstTasks, "No hay tareas que borrar.", Snackbar.LENGTH_LONG).show()
-            print("No hay tareas que borrar")
+            _onShowMessage.value = Event(application.getString(R.string.tasks_no_tasks_to_delete))
+
         }
     }
 
@@ -142,29 +142,46 @@ class TasksActivityViewModel(
     // Si no se estaba mostrando ninguna tarea, se muestra un Snackbar indicando
     // que no hay tareas que compartir.
     fun shareTasks() {
-        // TODO
+        if (tasks.value!!.isNotEmpty()) {
+            var text = ""
+            for (task in tasks.value!!) {
+                text += task.toString()
+            }
+            val context = application.applicationContext
+            val intent = Intent(Intent.ACTION_SEND)
+            intent.type = "text/plain"
+            intent.putExtra(Intent.EXTRA_TEXT, text)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            context.startActivity(intent)
+        } else {
+            // TODO Snackbar
+        }
     }
 
     // Actualiza el estado de completitud de la tarea recibida, atendiendo al
     // valor de isCompleted. Si es true la tarea es marcada como completada y
     // en caso contrario es marcada como pendiente.
     fun updateTaskCompletedState(task: Task, isCompleted: Boolean) {
+        if (!isCompleted){
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                task.complete()
+            }
+        }
             task.completed = !isCompleted
     }
 
     // Retorna si el concepto recibido es válido (no es una cadena vacía o en blanco)
     fun isValidConcept(concept: String): Boolean {
-        // TODO COMPLETED
         return concept.isNotEmpty() || concept.isNotBlank()
     }
 
     // Pide las tareas al repositorio, atendiendo al filtro recibido
     private fun queryTasks(filter: TasksActivityFilter) {
-        // TODO COMPLETED?
+        _currentFilter.value = filter
         when (filter) {
-            TasksActivityFilter.ALL -> repository.queryAllTasks()
-            TasksActivityFilter.PENDING -> repository.queryPendingTasks()
-            TasksActivityFilter.COMPLETED -> repository.queryCompletedTasks()
+            TasksActivityFilter.ALL ->  mutableTasks.value =  repository.queryAllTasks()
+            TasksActivityFilter.PENDING ->  mutableTasks.value =  repository.queryPendingTasks()
+            TasksActivityFilter.COMPLETED ->  mutableTasks.value = repository.queryCompletedTasks()
         }
     }
 

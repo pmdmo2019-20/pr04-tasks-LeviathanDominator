@@ -1,11 +1,10 @@
 package es.iessaladillo.pedrojoya.pr04.data
 
-import android.annotation.SuppressLint
 import android.os.Build
 import androidx.annotation.RequiresApi
 import es.iessaladillo.pedrojoya.pr04.data.entity.Task
-import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 // TODO: Crea una clase llamada LocalRepository que implemente la interfaz Repository
 //  usando una lista mutable para almacenar las tareas.
@@ -33,13 +32,14 @@ object LocalRepository : Repository {
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun addTask(concept: String) {
+        val format: DateTimeFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")
         mutableTasks.add(
             Task(
-                id++,
+                ++id,
                 concept,
-                LocalDateTime.now().toString(),
+                LocalDateTime.now().format(format),
                 false,
-                LocalDateTime.now().toString()
+                LocalDateTime.now().format(format)
             )
         )
     }
@@ -49,7 +49,7 @@ object LocalRepository : Repository {
     }
 
     override fun deleteTask(taskId: Long) {
-        for (task in mutableTasks){
+        for (task in tasks){
             if (task.id == taskId){
                 mutableTasks.remove(task)
             }
@@ -58,7 +58,17 @@ object LocalRepository : Repository {
 
     override fun deleteTasks(taskIdList: List<Long>) {
         for (id in taskIdList){
-            deleteTask(id)
+            System.out.println(id)
+            System.out.println("Los tasks que buscan este id")
+            for (task in tasks){
+                System.out.println(task.id)
+                if (task.id == id){
+
+                    System.out.println("ESTE ID HA SIDO BORRADO")
+                    mutableTasks.remove(task)
+                    return
+                }
+            }
         }
     }
 

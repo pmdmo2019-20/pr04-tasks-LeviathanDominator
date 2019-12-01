@@ -4,6 +4,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
+import android.widget.CheckBox
+import android.widget.CompoundButton
 import androidx.fragment.app.FragmentContainerView
 import androidx.recyclerview.widget.RecyclerView
 import es.iessaladillo.pedrojoya.pr04.R
@@ -12,6 +14,7 @@ import es.iessaladillo.pedrojoya.pr04.utils.strikeThrough
 import kotlinx.android.extensions.LayoutContainer
 import kotlinx.android.synthetic.main.tasks_activity.*
 import kotlinx.android.synthetic.main.tasks_activity_item.*
+import kotlinx.android.synthetic.main.tasks_activity_item.view.*
 
 // TODO: Crea una clase TasksActivityAdapter que actúe como adaptador del RecyclerView
 //  y que trabaje con una lista de tareas.
@@ -28,6 +31,11 @@ interface OnItemClickListener {
     fun onItemClick(position: Int)
 
 }
+interface OnCheckedChangeListener {
+
+    fun onCheckedChange(position: Int, isChecked: Boolean)
+
+}
 class TasksActivityAdapter : RecyclerView.Adapter<TasksActivityAdapter.ViewHolder>() {
 
     private var data: List<Task> = emptyList()
@@ -38,13 +46,19 @@ class TasksActivityAdapter : RecyclerView.Adapter<TasksActivityAdapter.ViewHolde
         setHasStableIds(true)
     }
 
-    fun getItem(position: Int) = data.get(position)
+    fun getItem(position: Int) = data[position]
 
     class ViewHolder(override val containerView: View, onItemClickListener: OnItemClickListener?) :
         RecyclerView.ViewHolder(containerView), LayoutContainer {
 
         init {
             itemView.setOnClickListener {
+                val position = adapterPosition
+                if (position != RecyclerView.NO_POSITION) {
+                    onItemClickListener?.onItemClick(position)
+                }
+            }
+            chkCompleted.setOnClickListener{
                 val position = adapterPosition
                 if (position != RecyclerView.NO_POSITION) {
                     onItemClickListener?.onItemClick(position)
