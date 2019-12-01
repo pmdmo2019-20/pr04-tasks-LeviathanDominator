@@ -6,11 +6,6 @@ import es.iessaladillo.pedrojoya.pr04.data.entity.Task
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
-// TODO: Crea una clase llamada LocalRepository que implemente la interfaz Repository
-//  usando una lista mutable para almacenar las tareas.
-//  Los id de las tareas se irán generando secuencialmente a partir del valor 1 conforme
-//  se van agregando tareas (add).
-
 object LocalRepository : Repository {
 
     private var id: Long = 1
@@ -49,62 +44,49 @@ object LocalRepository : Repository {
     }
 
     override fun deleteTask(taskId: Long) {
-        for (task in tasks){
-            if (task.id == taskId){
-                mutableTasks.remove(task)
+        val iterator = mutableTasks.iterator()
+        while (iterator.hasNext()) {
+            val task = iterator.next()
+            if (task.id == taskId) {
+                iterator.remove()
             }
         }
     }
 
     override fun deleteTasks(taskIdList: List<Long>) {
-        for (id in taskIdList){
-            System.out.println(id)
-            System.out.println("Los tasks que buscan este id")
-            for (task in tasks){
-                System.out.println(task.id)
-                if (task.id == id){
-
-                    System.out.println("ESTE ID HA SIDO BORRADO")
-                    mutableTasks.remove(task)
-                    return
-                }
-            }
+        for (id in taskIdList) {
+            deleteTask(id)
         }
     }
 
     override fun markTaskAsCompleted(taskId: Long) {
         for (task in mutableTasks) {
-            if (task.id == taskId) {
+            if (task.id == taskId && !task.completed) {
                 task.completed = true
-            }
-        }
-    }
-
-    override fun markTasksAsCompleted(taskIdList: List<Long>) {
-        for (task in mutableTasks) {
-            for (id in taskIdList) {
-                if (task.id == id) {
-                    task.completed = true
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    task.complete()
                 }
             }
         }
     }
 
+    override fun markTasksAsCompleted(taskIdList: List<Long>) {
+        for (id in taskIdList) {
+            markTaskAsCompleted(id)
+        }
+    }
+
     override fun markTaskAsPending(taskId: Long) {
         for (task in mutableTasks) {
-            if (task.id == taskId) {
+            if (task.id == taskId && task.completed) {
                 task.completed = false
             }
         }
     }
 
     override fun markTasksAsPending(taskIdList: List<Long>) {
-        for (task in mutableTasks) {
-            for (id in taskIdList) {
-                if (task.id == id) {
-                    task.completed = false
-                }
-            }
+        for (id in taskIdList) {
+            markTaskAsPending(id)
         }
     }
 

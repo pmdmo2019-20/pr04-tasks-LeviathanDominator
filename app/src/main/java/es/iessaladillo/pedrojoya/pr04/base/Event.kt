@@ -25,6 +25,7 @@ open class Event<out T>(private val content: T) {
 
 // Permite observar directamente el contenido de un Event.
 inline fun <T> LiveData<Event<T>>.observeEvent(
-    owner: LifecycleOwner, crossinline onEventUnhandledContent: (T) -> Unit) {
+    owner: LifecycleOwner, crossinline onEventUnhandledContent: (T) -> Unit
+) {
     observe(owner, Observer { it.getContentIfNotHandled()?.let(onEventUnhandledContent) })
 }

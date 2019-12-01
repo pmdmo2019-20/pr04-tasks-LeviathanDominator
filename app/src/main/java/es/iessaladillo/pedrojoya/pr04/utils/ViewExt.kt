@@ -15,8 +15,10 @@ fun View.invisibleUnless(condition: Boolean) {
 // Oculta el teclado virtual
 fun View.hideKeyboard(): Boolean {
     try {
-        val inputMethodManager = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        val inputMethodManager =
+            context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
         return inputMethodManager.hideSoftInputFromWindow(windowToken, 0)
-    } catch (ignored: RuntimeException) { }
+    } catch (ignored: RuntimeException) {
+    }
     return false
 }

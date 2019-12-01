@@ -25,4 +25,7 @@
     <string name="tasks_no_tasks_to_mark_as_completed">No tasks to mark as completed</string>
     <string name="tasks_no_tasks_to_mark_as_pending">No tasks to mark as pending</string>
     <string name="invalid_text">El texto introducido no es válido.</string>
+    <string name="invalid_share_empty_list">You cannot share an empty list.</string>
+    <string name="item_deleted_notification">%s deleted.</string>
+    <string name="snackbar_action">Undo</string>
 </resources>

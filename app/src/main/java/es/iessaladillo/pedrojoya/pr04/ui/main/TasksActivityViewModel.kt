@@ -61,6 +61,10 @@ class TasksActivityViewModel(
     val onShowTaskDeleted: LiveData<Event<Task>>
         get() = _onShowTaskDeleted
 
+    private val _onShareList: MutableLiveData<Boolean> = MutableLiveData()
+    val onShareList: LiveData<Boolean>
+        get() = _onShareList
+
     // ACTION METHODS
 
     // Hace que se muestre en el RecyclerView todas las tareas.
@@ -71,7 +75,7 @@ class TasksActivityViewModel(
 
     // Hace que se muestre en el RecyclerView sólo las tareas completadas.
     fun filterCompleted(itemId: Int) {
-       queryTasks(TasksActivityFilter.COMPLETED)
+        queryTasks(TasksActivityFilter.COMPLETED)
         _currentFilterMenuItemId.value = itemId
     }
 
@@ -86,19 +90,16 @@ class TasksActivityViewModel(
     // mostrar en el RecyclerView la lista con todas las tareas, no sólo
     // las completadas.
     fun addTask(concept: String) {
-        // TODO
         repository.addTask(concept)
     }
 
     // Agrega la tarea
     fun insertTask(task: Task) {
-        // TODO
         repository.insertTask(task)
     }
 
     // Borra la tarea
     fun deleteTask(task: Task) {
-        // TODO
         repository.deleteTask(task.id)
     }
 
@@ -120,7 +121,7 @@ class TasksActivityViewModel(
     // Si no se estaba mostrando ninguna tarea, se muestra un mensaje
     // informativo en un SnackBar de que no hay tareas que marcar como completadas.
     fun markTasksAsCompleted() {
-        val ids: List<Long> = tasks.value!!.filter { it.completed }.map { it.id }
+        val ids: List<Long> = tasks.value!!.map { it.id }
         if (ids.isNotEmpty()) {
             repository.markTasksAsCompleted(ids)
         }
@@ -131,9 +132,9 @@ class TasksActivityViewModel(
     // Si no se estaba mostrando ninguna tarea, se muestra un mensaje
     // informativo en un SnackBar de que no hay tareas que marcar como pendientes.
     fun markTasksAsPending() {
-        val ids: List<Long> = tasks.value!!.filter { !it.completed }.map { it.id }
+        val ids: List<Long> = tasks.value!!.map { it.id }
         if (ids.isNotEmpty()) {
-            repository.markTasksAsCompleted(ids)
+            repository.markTasksAsPending(ids)
         }
     }
 
@@ -154,7 +155,8 @@ class TasksActivityViewModel(
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
             context.startActivity(intent)
         } else {
-            // TODO Snackbar
+            _onShareList.value = false
+            _onShareList.value = true
         }
     }
 
@@ -162,12 +164,12 @@ class TasksActivityViewModel(
     // valor de isCompleted. Si es true la tarea es marcada como completada y
     // en caso contrario es marcada como pendiente.
     fun updateTaskCompletedState(task: Task, isCompleted: Boolean) {
-        if (!isCompleted){
+        if (!isCompleted) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 task.complete()
             }
         }
-            task.completed = !isCompleted
+        task.completed = !isCompleted
     }
 
     // Retorna si el concepto recibido es válido (no es una cadena vacía o en blanco)
@@ -179,9 +181,9 @@ class TasksActivityViewModel(
     private fun queryTasks(filter: TasksActivityFilter) {
         _currentFilter.value = filter
         when (filter) {
-            TasksActivityFilter.ALL ->  mutableTasks.value =  repository.queryAllTasks()
-            TasksActivityFilter.PENDING ->  mutableTasks.value =  repository.queryPendingTasks()
-            TasksActivityFilter.COMPLETED ->  mutableTasks.value = repository.queryCompletedTasks()
+            TasksActivityFilter.ALL -> mutableTasks.value = repository.queryAllTasks()
+            TasksActivityFilter.PENDING -> mutableTasks.value = repository.queryPendingTasks()
+            TasksActivityFilter.COMPLETED -> mutableTasks.value = repository.queryCompletedTasks()
         }
     }
 

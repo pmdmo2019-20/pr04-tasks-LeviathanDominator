@@ -15,15 +15,15 @@
                     android:id="@+id/mnuFilterAll"
                     android:title="@string/tasks_mnuFilterAll"
                     android:icon="@drawable/ic_iconmonstr_clipboard_1"
-                    android:checked="true"/>
+                    android:checked="true" />
                 <item
                     android:id="@+id/mnuFilterPending"
                     android:icon="@drawable/ic_iconmonstr_clipboard_7"
-                    android:title="@string/tasks_mnuFilterPending"/>
+                    android:title="@string/tasks_mnuFilterPending" />
                 <item
                     android:id="@+id/mnuFilterCompleted"
                     android:icon="@drawable/ic_iconmonstr_clipboard_5"
-                    android:title="@string/tasks_mnuFilterCompleted"/>
+                    android:title="@string/tasks_mnuFilterCompleted" />
             </group>
         </menu>
     </item>

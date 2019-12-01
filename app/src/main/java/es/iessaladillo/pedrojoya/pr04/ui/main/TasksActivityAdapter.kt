@@ -6,6 +6,8 @@ import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.CheckBox
 import android.widget.CompoundButton
+import androidx.core.content.ContextCompat
+import androidx.core.content.res.ResourcesCompat.getColor
 import androidx.fragment.app.FragmentContainerView
 import androidx.recyclerview.widget.RecyclerView
 import es.iessaladillo.pedrojoya.pr04.R
@@ -31,15 +33,10 @@ interface OnItemClickListener {
     fun onItemClick(position: Int)
 
 }
-interface OnCheckedChangeListener {
 
-    fun onCheckedChange(position: Int, isChecked: Boolean)
-
-}
 class TasksActivityAdapter : RecyclerView.Adapter<TasksActivityAdapter.ViewHolder>() {
 
     private var data: List<Task> = emptyList()
-
     private var onItemClickListener: OnItemClickListener? = null
 
     init {
@@ -58,7 +55,7 @@ class TasksActivityAdapter : RecyclerView.Adapter<TasksActivityAdapter.ViewHolde
                     onItemClickListener?.onItemClick(position)
                 }
             }
-            chkCompleted.setOnClickListener{
+            chkCompleted.setOnClickListener {
                 val position = adapterPosition
                 if (position != RecyclerView.NO_POSITION) {
                     onItemClickListener?.onItemClick(position)
@@ -70,8 +67,10 @@ class TasksActivityAdapter : RecyclerView.Adapter<TasksActivityAdapter.ViewHolde
             lblConcept.text = task.concept
             if (task.completed) {
                 lblCompleted.text = String.format("Completed at %s", task.completedAt)
+                viewBar.setBackgroundColor(containerView.context.resources.getColor(R.color.colorCompletedTask))
             } else {
                 lblCompleted.text = String.format("Created at %s", task.createdAt)
+                viewBar.setBackgroundColor(containerView.context.resources.getColor(R.color.colorPendingTask))
             }
             chkCompleted.isChecked = task.completed
             lblConcept.strikeThrough(task.completed)

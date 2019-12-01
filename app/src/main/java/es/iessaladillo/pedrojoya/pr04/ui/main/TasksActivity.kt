@@ -46,11 +46,6 @@ class TasksActivity : AppCompatActivity() {
     private val listAdapter: TasksActivityAdapter = TasksActivityAdapter().apply {
         setOnItemClickListener(object : OnItemClickListener {
             override fun onItemClick(position: Int) {
-                Toast.makeText(
-                    this@TasksActivity,
-                    getItem(position).completed.toString(),
-                    Toast.LENGTH_LONG
-                ).show()
                 viewModel.updateTaskCompletedState(
                     getItem(position),
                     getItem(position).completed
@@ -59,7 +54,6 @@ class TasksActivity : AppCompatActivity() {
             }
         })
     }
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -71,19 +65,25 @@ class TasksActivity : AppCompatActivity() {
 
     private fun observe() {
         viewModel.tasks.observe(this) {
-            showTasks(it)
+           showTasks(it)
         }
-        viewModel.onStartActivity.observeEvent(this) {
 
-        }
         viewModel.onShowMessage.observeEvent(this) {
-            Snackbar.make(lstTasks, it, Snackbar.LENGTH_SHORT).show()
+            Snackbar.make(lstTasks, it, Snackbar.LENGTH_LONG).show()
         }
+
         viewModel.onShowTaskDeleted.observeEvent(this) {
-            Snackbar.make(lstTasks, it.concept, Snackbar.LENGTH_SHORT).show()
+            Snackbar.make(lstTasks, it.concept, Snackbar.LENGTH_LONG).show()
         }
-        viewModel.currentFilterMenuItemId.observe(this){
+
+        viewModel.currentFilterMenuItemId.observe(this) {
             checkMenuItem(it)
+        }
+
+        viewModel.onShareList.observe(this){
+            if (!it){
+                Snackbar.make(lstTasks, getString(R.string.invalid_share_empty_list), Snackbar.LENGTH_LONG).show()
+            }
         }
     }
 
@@ -95,7 +95,12 @@ class TasksActivity : AppCompatActivity() {
             addItemDecoration(DividerItemDecoration(this@TasksActivity, RecyclerView.VERTICAL))
             adapter = listAdapter
             setOnSwipeListener { viewHolder, _ ->
-                deleteTask(listAdapter.getItem(viewHolder.adapterPosition).id)
+                val task = listAdapter.getItem(viewHolder.adapterPosition)
+                viewModel.deleteTask(task)
+                Snackbar.make(lstTasks, String.format(context.getString(R.string.item_deleted_notification), task.concept), Snackbar.LENGTH_LONG).setAction(context.getString(
+                                    R.string.snackbar_action)){
+                    viewModel.insertTask(task)
+                }.show()
                 observe()
             }
         }
@@ -132,6 +137,7 @@ class TasksActivity : AppCompatActivity() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        observe()
         when (item.itemId) {
             R.id.mnuShare -> viewModel.shareTasks()
             R.id.mnuDelete -> viewModel.deleteTasks()
@@ -141,30 +147,15 @@ class TasksActivity : AppCompatActivity() {
             R.id.mnuFilterPending -> viewModel.filterPending(item.itemId)
             R.id.mnuFilterCompleted -> viewModel.filterCompleted(item.itemId)
             else -> {
-                observe()
                 return super.onOptionsItemSelected(item)
             }
         }
-        observe()
         return true
     }
 
-    /*private fun checkMenuItem(@MenuRes menuItemId: Int) {
-        Toast.makeText(this, menuItemId.toString(), Toast.LENGTH_LONG).show()
-       lstTasks.post {
-           val item = mnuFilter.findItem(menuItemId)
-            item?.let { menuItem ->
-              menuItem.isChecked = true
-            }
-        }
-    }*/
-
-    private fun checkMenuItem(@MenuRes menuItemId: Int){
+    private fun checkMenuItem(@MenuRes menuItemId: Int) {
         val item = mnuFilter?.subMenu?.findItem(menuItemId)
-        item.let { menuItem ->
-            //lstTasks.post(
-                menuItem?.isChecked = true
-            //)
+        item.let { menuItem -> menuItem?.isChecked = true
         }
     }
 
