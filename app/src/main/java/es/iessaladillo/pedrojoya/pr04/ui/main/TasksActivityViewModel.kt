@@ -6,13 +6,10 @@ import android.os.Build
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.google.android.material.snackbar.Snackbar
 import es.iessaladillo.pedrojoya.pr04.R
 import es.iessaladillo.pedrojoya.pr04.base.Event
 import es.iessaladillo.pedrojoya.pr04.data.Repository
 import es.iessaladillo.pedrojoya.pr04.data.entity.Task
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 
 class TasksActivityViewModel(
     private val repository: Repository,
@@ -37,29 +34,11 @@ class TasksActivityViewModel(
     val currentFilterMenuItemId: LiveData<Int>
         get() = _currentFilterMenuItemId
 
-    private val _activityTitle: MutableLiveData<String> =
-        MutableLiveData(application.getString(R.string.tasks_title_all))
-    val activityTitle: LiveData<String>
-        get() = _activityTitle
-
-    private val _lblEmptyViewText: MutableLiveData<String> =
-        MutableLiveData(application.getString(R.string.tasks_no_tasks_yet))
-    val lblEmptyViewText: LiveData<String>
-        get() = _lblEmptyViewText
-
     // Eventos de comunicación con la actividad
-
-    private val _onStartActivity: MutableLiveData<Event<Intent>> = MutableLiveData()
-    val onStartActivity: LiveData<Event<Intent>>
-        get() = _onStartActivity
 
     private val _onShowMessage: MutableLiveData<Event<String>> = MutableLiveData()
     val onShowMessage: LiveData<Event<String>>
         get() = _onShowMessage
-
-    private val _onShowTaskDeleted: MutableLiveData<Event<Task>> = MutableLiveData()
-    val onShowTaskDeleted: LiveData<Event<Task>>
-        get() = _onShowTaskDeleted
 
     private val _onShareList: MutableLiveData<Boolean> = MutableLiveData()
     val onShareList: LiveData<Boolean>
@@ -91,6 +70,7 @@ class TasksActivityViewModel(
     // las completadas.
     fun addTask(concept: String) {
         repository.addTask(concept)
+        sortTasks()
     }
 
     // Agrega la tarea
@@ -187,5 +167,8 @@ class TasksActivityViewModel(
         }
     }
 
+    private fun sortTasks(){
+        repository.sortTasks()
+    }
 }
 

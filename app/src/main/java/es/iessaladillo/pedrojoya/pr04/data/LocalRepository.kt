@@ -63,9 +63,6 @@ object LocalRepository : Repository {
         for (task in mutableTasks) {
             if (task.id == taskId && !task.completed) {
                 task.completed = true
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    task.complete()
-                }
             }
         }
     }
@@ -89,5 +86,9 @@ object LocalRepository : Repository {
             markTaskAsPending(id)
         }
     }
+
+    override fun sortTasks() {
+        mutableTasks.sortByDescending { it.id }
+}
 
 }

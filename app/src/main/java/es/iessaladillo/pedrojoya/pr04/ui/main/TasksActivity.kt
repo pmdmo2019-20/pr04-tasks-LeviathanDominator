@@ -1,14 +1,12 @@
 package es.iessaladillo.pedrojoya.pr04.ui.main
 
-import android.app.Application
-import android.content.ActivityNotFoundException
-import android.content.Intent
 import android.os.Bundle
 import android.view.KeyEvent
 import android.view.Menu
 import android.view.MenuItem
-import android.view.View
-import android.widget.*
+import android.widget.ImageView
+import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.annotation.MenuRes
 import androidx.appcompat.app.AppCompatActivity
@@ -22,16 +20,11 @@ import com.google.android.material.snackbar.Snackbar
 import es.iessaladillo.pedrojoya.pr04.R
 import es.iessaladillo.pedrojoya.pr04.base.observeEvent
 import es.iessaladillo.pedrojoya.pr04.data.LocalRepository
-import es.iessaladillo.pedrojoya.pr04.data.LocalRepository.addTask
-import es.iessaladillo.pedrojoya.pr04.data.LocalRepository.deleteTask
-import es.iessaladillo.pedrojoya.pr04.data.Repository
 import es.iessaladillo.pedrojoya.pr04.data.entity.Task
 import es.iessaladillo.pedrojoya.pr04.utils.hideKeyboard
 import es.iessaladillo.pedrojoya.pr04.utils.invisibleUnless
 import es.iessaladillo.pedrojoya.pr04.utils.setOnSwipeListener
 import kotlinx.android.synthetic.main.tasks_activity.*
-import kotlinx.android.synthetic.main.tasks_activity_item.view.*
-import java.text.FieldPosition
 
 
 class TasksActivity : AppCompatActivity() {
@@ -65,26 +58,27 @@ class TasksActivity : AppCompatActivity() {
 
     private fun observe() {
         viewModel.tasks.observe(this) {
-           showTasks(it)
+            showTasks(it)
         }
 
         viewModel.onShowMessage.observeEvent(this) {
             Snackbar.make(lstTasks, it, Snackbar.LENGTH_LONG).show()
         }
 
-        viewModel.onShowTaskDeleted.observeEvent(this) {
-            Snackbar.make(lstTasks, it.concept, Snackbar.LENGTH_LONG).show()
-        }
-
         viewModel.currentFilterMenuItemId.observe(this) {
             checkMenuItem(it)
         }
 
-        viewModel.onShareList.observe(this){
-            if (!it){
-                Snackbar.make(lstTasks, getString(R.string.invalid_share_empty_list), Snackbar.LENGTH_LONG).show()
+        viewModel.onShareList.observe(this) {
+            if (!it) {
+                Snackbar.make(
+                    lstTasks,
+                    getString(R.string.invalid_share_empty_list),
+                    Snackbar.LENGTH_LONG
+                ).show()
             }
         }
+
     }
 
     private fun setupRecyclerView() {
@@ -95,13 +89,23 @@ class TasksActivity : AppCompatActivity() {
             addItemDecoration(DividerItemDecoration(this@TasksActivity, RecyclerView.VERTICAL))
             adapter = listAdapter
             setOnSwipeListener { viewHolder, _ ->
+                observe()
                 val task = listAdapter.getItem(viewHolder.adapterPosition)
                 viewModel.deleteTask(task)
-                Snackbar.make(lstTasks, String.format(context.getString(R.string.item_deleted_notification), task.concept), Snackbar.LENGTH_LONG).setAction(context.getString(
-                                    R.string.snackbar_action)){
+                Snackbar.make(
+                    lstTasks,
+                    String.format(
+                        context.getString(R.string.tasks_task_deleted),
+                        task.concept
+                    ),
+                    Snackbar.LENGTH_LONG
+                ).setAction(
+                    context.getString(
+                        R.string.tasks_recreate
+                    )
+                ) {
                     viewModel.insertTask(task)
                 }.show()
-                observe()
             }
         }
     }
@@ -155,7 +159,8 @@ class TasksActivity : AppCompatActivity() {
 
     private fun checkMenuItem(@MenuRes menuItemId: Int) {
         val item = mnuFilter?.subMenu?.findItem(menuItemId)
-        item.let { menuItem -> menuItem?.isChecked = true
+        item.let { menuItem ->
+            menuItem?.isChecked = true
         }
     }
 
