@@ -63,6 +63,7 @@ object LocalRepository : Repository {
         for (task in mutableTasks) {
             if (task.id == taskId && !task.completed) {
                 task.completed = true
+                task.complete()
             }
         }
     }
