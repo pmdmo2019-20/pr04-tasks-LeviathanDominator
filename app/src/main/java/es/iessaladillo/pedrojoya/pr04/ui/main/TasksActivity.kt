@@ -1,5 +1,6 @@
 package es.iessaladillo.pedrojoya.pr04.ui.main
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.KeyEvent
 import android.view.Menu
@@ -43,7 +44,7 @@ class TasksActivity : AppCompatActivity() {
                     getItem(position),
                     getItem(position).completed
                 )
-                observe()
+                notifyItemChanged(position)
             }
         })
     }
@@ -69,14 +70,16 @@ class TasksActivity : AppCompatActivity() {
             checkMenuItem(it)
         }
 
-        viewModel.onShareList.observe(this) {
-            if (!it) {
-                Snackbar.make(
-                    lstTasks,
-                    getString(R.string.invalid_share_empty_list),
-                    Snackbar.LENGTH_LONG
-                ).show()
-            }
+        viewModel.activityTitle.observe(this) {
+            title = it
+        }
+
+        viewModel.lblEmptyViewText.observe(this) {
+            lblEmptyView.text = it
+        }
+
+        viewModel.onShareList.observeEvent(this) {
+            Snackbar.make(lstTasks, it, Snackbar.LENGTH_LONG).show()
         }
 
     }
@@ -89,8 +92,7 @@ class TasksActivity : AppCompatActivity() {
             addItemDecoration(DividerItemDecoration(this@TasksActivity, RecyclerView.VERTICAL))
             adapter = listAdapter
             setOnSwipeListener { viewHolder, _ ->
-                observe()
-                val task = listAdapter.getItem(viewHolder.adapterPosition)
+                val task: Task = listAdapter.getItem(viewHolder.adapterPosition)
                 viewModel.deleteTask(task)
                 Snackbar.make(
                     lstTasks,
@@ -105,7 +107,10 @@ class TasksActivity : AppCompatActivity() {
                     )
                 ) {
                     viewModel.insertTask(task)
+                    viewModel.sortTasks()
+                    listAdapter.notifyDataSetChanged()
                 }.show()
+                listAdapter.notifyItemRemoved(viewHolder.adapterPosition)
             }
         }
     }
@@ -126,9 +131,10 @@ class TasksActivity : AppCompatActivity() {
         val concept: String = txtConcept!!.text.toString()
         if (viewModel.isValidConcept(concept)) {
             viewModel.addTask(concept)
+            viewModel.sortTasks()
             txtConcept!!.hideKeyboard()
             txtConcept!!.text = ""
-            observe()
+            listAdapter.notifyDataSetChanged()
         } else {
             Toast.makeText(this, getString(R.string.invalid_text), Toast.LENGTH_LONG).show()
         }
@@ -141,7 +147,6 @@ class TasksActivity : AppCompatActivity() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        observe()
         when (item.itemId) {
             R.id.mnuShare -> viewModel.shareTasks()
             R.id.mnuDelete -> viewModel.deleteTasks()
@@ -154,13 +159,16 @@ class TasksActivity : AppCompatActivity() {
                 return super.onOptionsItemSelected(item)
             }
         }
+        listAdapter.notifyDataSetChanged()
         return true
     }
 
     private fun checkMenuItem(@MenuRes menuItemId: Int) {
-        val item = mnuFilter?.subMenu?.findItem(menuItemId)
-        item.let { menuItem ->
-            menuItem?.isChecked = true
+        lstTasks.post {
+            val item = mnuFilter?.subMenu?.findItem(menuItemId)
+            item.let { menuItem ->
+                menuItem?.isChecked = true
+            }
         }
     }
 

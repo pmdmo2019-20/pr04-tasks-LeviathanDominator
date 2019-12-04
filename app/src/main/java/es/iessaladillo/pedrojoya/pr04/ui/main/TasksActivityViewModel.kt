@@ -3,6 +3,7 @@ package es.iessaladillo.pedrojoya.pr04.ui.main
 import android.app.Application
 import android.content.Intent
 import android.os.Build
+import android.view.MenuItem
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -34,14 +35,28 @@ class TasksActivityViewModel(
     val currentFilterMenuItemId: LiveData<Int>
         get() = _currentFilterMenuItemId
 
+    private val _activityTitle: MutableLiveData<String> =
+        MutableLiveData(application.getString(R.string.tasks_title_all))
+    val activityTitle: LiveData<String>
+        get() = _activityTitle
+
+    private val _lblEmptyViewText: MutableLiveData<String> =
+        MutableLiveData(application.getString(R.string.tasks_no_tasks_yet))
+    val lblEmptyViewText: LiveData<String>
+        get() = _lblEmptyViewText
+
     // Eventos de comunicación con la actividad
+
+    private val _onStartActivity: MutableLiveData<Event<Intent>> = MutableLiveData()
+    val onStartActivity: LiveData<Event<Intent>>
+        get() = _onStartActivity
 
     private val _onShowMessage: MutableLiveData<Event<String>> = MutableLiveData()
     val onShowMessage: LiveData<Event<String>>
         get() = _onShowMessage
 
-    private val _onShareList: MutableLiveData<Boolean> = MutableLiveData()
-    val onShareList: LiveData<Boolean>
+    private val _onShareList: MutableLiveData<Event<String>> = MutableLiveData()
+    val onShareList: LiveData<Event<String>>
         get() = _onShareList
 
     // ACTION METHODS
@@ -70,7 +85,6 @@ class TasksActivityViewModel(
     // las completadas.
     fun addTask(concept: String) {
         repository.addTask(concept)
-        sortTasks()
     }
 
     // Agrega la tarea
@@ -83,6 +97,11 @@ class TasksActivityViewModel(
         repository.deleteTask(task.id)
     }
 
+    // Ordena las tareas
+    fun sortTasks() {
+        repository.sortTasks()
+    }
+
     // Borra todas las tareas mostradas actualmente en el RecyclerView.
     // Si no se estaba mostrando ninguna tarea, se muestra un mensaje
     // informativo en un SnackBar de que no hay tareas que borrar.
@@ -92,7 +111,6 @@ class TasksActivityViewModel(
             repository.deleteTasks(ids)
         } else {
             _onShowMessage.value = Event(application.getString(R.string.tasks_no_tasks_to_delete))
-
         }
     }
 
@@ -104,6 +122,9 @@ class TasksActivityViewModel(
         val ids: List<Long> = tasks.value!!.map { it.id }
         if (ids.isNotEmpty()) {
             repository.markTasksAsCompleted(ids)
+        } else {
+            _onShowMessage.value =
+                Event(application.getString(R.string.tasks_no_tasks_to_mark_as_completed))
         }
     }
 
@@ -115,6 +136,9 @@ class TasksActivityViewModel(
         val ids: List<Long> = tasks.value!!.map { it.id }
         if (ids.isNotEmpty()) {
             repository.markTasksAsPending(ids)
+        } else {
+            _onShowMessage.value =
+                Event(application.getString(R.string.tasks_no_tasks_to_mark_as_pending))
         }
     }
 
@@ -135,8 +159,7 @@ class TasksActivityViewModel(
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
             context.startActivity(intent)
         } else {
-            _onShareList.value = false
-            _onShareList.value = true
+            _onShareList.value = Event(application.getString(R.string.invalid_share_empty_list))
         }
     }
 
@@ -165,10 +188,28 @@ class TasksActivityViewModel(
             TasksActivityFilter.PENDING -> mutableTasks.value = repository.queryPendingTasks()
             TasksActivityFilter.COMPLETED -> mutableTasks.value = repository.queryCompletedTasks()
         }
+        setFilterText()
     }
 
-    private fun sortTasks(){
-        repository.sortTasks()
+    private fun setFilterText() {
+        when (_currentFilter.value) {
+            TasksActivityFilter.ALL -> {
+                _activityTitle.value =
+                    application.getString(R.string.tasks_title_all); _lblEmptyViewText.value =
+                    application.getString(R.string.tasks_no_tasks_yet)
+            }
+            TasksActivityFilter.PENDING -> {
+                _activityTitle.value =
+                    application.getString(R.string.tasks_title_pending); _lblEmptyViewText.value =
+                    application.getString(R.string.tasks_no_pending_tasks_yet)
+            }
+            TasksActivityFilter.COMPLETED -> {
+                _activityTitle.value =
+                    application.getString(R.string.tasks_title_completed); _lblEmptyViewText.value =
+                    application.getString(R.string.tasks_no_completed_tasks_yet)
+            }
+        }
     }
+
 }
 

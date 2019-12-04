@@ -2,6 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/AndroidProjects-pr04-tasks-LeviathanDominator-PR04-Tasks.iml" filepath="$PROJECT_DIR$/AndroidProjects-pr04-tasks-LeviathanDominator-PR04-Tasks.iml" />
+      <module fileurl="file://$PROJECT_DIR$/app/AndroidProjects-pr04-tasks-LeviathanDominator-app.iml" filepath="$PROJECT_DIR$/app/AndroidProjects-pr04-tasks-LeviathanDominator-app.iml" />
       <module fileurl="file://$PROJECT_DIR$/PR04-Tasks.iml" filepath="$PROJECT_DIR$/PR04-Tasks.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
       <module fileurl="file://$PROJECT_DIR$/pr04-tasks-LeviathanDominator-PR04-Tasks.iml" filepath="$PROJECT_DIR$/pr04-tasks-LeviathanDominator-PR04-Tasks.iml" />
